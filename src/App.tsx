@@ -4,6 +4,8 @@ import "./App.css";
 import { AbiItems } from "@polyjuice-provider/base";
 import {
   polyjuiceWallet,
+  polyjuiceWalletWebsocket,
+  polyjuiceWebsocketProvider,
   polyjuiceWeb3HttpProvider,
   polyjuiceWeb3,
   ethersWeb3Provider,
@@ -162,6 +164,33 @@ function App() {
     console.log(txResponse);
   };
 
+  const [newBlockNumber, setNewBlockNumber] = useState<number | string>();
+  const [isStartSubscribeBlockNumber, setIsStartSubscribeBlockNumber] = useState<boolean>(false);
+  const subscribeBlocks = () => {
+    setIsStartSubscribeBlockNumber(true);
+    polyjuiceWebsocketProvider.on("block", (data)=>{
+      setNewBlockNumber(data);
+    })
+  }
+
+  const sendTxUsingEthersContractWithPkWalletSigning = async () => {
+    const simpleStorageV2Contract = new ethers.Contract(
+      (deployedContractAddress || process.env.REACT_APP_EXAMPLE_CONTRACT_ADDRESS)!,
+      SIMPLE_STORAGE_V2_ABI,
+      polyjuiceWalletWebsocket
+    );
+    let overrides = {
+      gasLimit: 0x54d30,
+      gasPrice: 0x0,
+      value: 0x0,
+    };
+    const txResponse = await simpleStorageV2Contract.set(
+      process.env.REACT_APP_ETH_ADDRESS,
+      overrides
+    );
+    console.log(txResponse);
+  };
+
   return (
     <div className="App">
       <header>
@@ -190,6 +219,18 @@ function App() {
           <button onClick={sendTxUsingEthersContractWithMetamaskSigning}>
             sendTxUsingEthersContractWithMetamaskSigning
           </button>
+        </p>
+        <p>
+          <button onClick={sendTxUsingEthersContractWithPkWalletSigning}>
+            sendTxUsingEthersContractWithPkWalletSigning
+          </button>
+        </p>
+        <p>
+          <button onClick={subscribeBlocks}>
+            subscribeBlocks
+          </button>
+          <p> subscribe status: {isStartSubscribeBlockNumber ? "running" : "not yet"} </p>
+          <h4>new Block Number: {newBlockNumber}</h4>
         </p>
       </header>
     </div>
