@@ -191,6 +191,32 @@ function App() {
     console.log(txResponse);
   };
 
+  const callUsingEthersContractWithPkWalletSigning = async () => {
+    const simpleStorageV2Contract = new ethers.Contract(
+      (deployedContractAddress || process.env.REACT_APP_EXAMPLE_CONTRACT_ADDRESS)!,
+      SIMPLE_STORAGE_V2_ABI,
+      polyjuiceWalletWebsocket
+    );
+    const txResponse = await simpleStorageV2Contract.get();
+    console.log(txResponse);
+  };
+
+  const [isWebsocketConnected, setIsWebsocketConnected] = useState(true);
+  const [runningTime, setRunningTime] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if(isWebsocketConnected)
+        setRunningTime(prevCount => prevCount + 1);
+    }, 1000);
+    polyjuiceWebsocketProvider._websocket.onclose = function(){
+      setIsWebsocketConnected(false);
+      clearInterval(timer);
+    };
+    return () => {
+      clearInterval(timer);
+    };
+  }, []); 
+
   return (
     <div className="App">
       <header>
@@ -220,16 +246,23 @@ function App() {
             sendTxUsingEthersContractWithMetamaskSigning
           </button>
         </p>
+        <h4>==== below is websocket session ====</h4>
+        <p>websocket status: { isWebsocketConnected ? "connected" : "disconnected" } , running time: {runningTime} s</p>
         <p>
           <button onClick={sendTxUsingEthersContractWithPkWalletSigning}>
             sendTxUsingEthersContractWithPkWalletSigning
           </button>
         </p>
         <p>
+          <button onClick={callUsingEthersContractWithPkWalletSigning}>
+            callUsingEthersContractWithPkWalletSigning
+          </button>
+        </p>
+        <p>
           <button onClick={subscribeBlocks}>
             subscribeBlocks
           </button>
-          <p> subscribe status: {isStartSubscribeBlockNumber ? "running" : "not yet"} </p>
+          <p> subscribe status: {isStartSubscribeBlockNumber && isWebsocketConnected ? "running" : "unsubscribe"} </p>
           <h4>new Block Number: {newBlockNumber}</h4>
         </p>
       </header>
