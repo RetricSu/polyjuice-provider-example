@@ -22,7 +22,6 @@ require("dotenv").config();
 
 function App() {
   const [scriptHash, setScriptHash] = useState<string>();
-  const [encodeArgs, setEncodeArgs] = useState<string>();
   const [deployedContractAddress, setDeployedContractAddress] =
     useState<string>();
 
@@ -34,7 +33,6 @@ function App() {
 
   const init = () => {
     getScriptHashByAccountId(0x0);
-    ecodeArgs();
   };
 
   const getScriptHashByAccountId = (id: number) => {
@@ -43,36 +41,6 @@ function App() {
       .then((result) => {
         setScriptHash(result);
       });
-  };
-
-  const ecodeArgs = () => {
-    const data = polyjuiceWallet.godwoker.encodeArgs({
-      from: "",
-      to: "",
-      gas: "",
-      gasPrice: "",
-      data: "",
-      value: "",
-    });
-    console.log("ethers ecode data:", data);
-
-    const data2 = polyjuiceWeb3HttpProvider.godwoker.encodeArgs({
-      from: "",
-      to: "",
-      gas: "",
-      gasPrice: "",
-      data: "",
-      value: "",
-    });
-    console.log("web3 ecode data:", data2);
-
-    if (data === data2) {
-      setEncodeArgs(data);
-    } else {
-      setEncodeArgs(
-        "polyjuiceWeb3HttpProvider encodeArgs is not equal to polyjuiceWallet encodeArgs. failed."
-      );
-    }
   };
 
   const deployContractWithEtherContractFactory = async () => {
@@ -229,7 +197,6 @@ function App() {
           Godwoken Polyjuice E2E Tester
         </a>
         <p>Account 0x0 Script Hash: {scriptHash}</p>
-        <p>encodeArgs for empty eth tx: {encodeArgs}</p>
         <p>
           <button onClick={deployContractWithEtherContractFactory}>
             deployContractWithEtherContractFactory
